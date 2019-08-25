@@ -104,7 +104,7 @@ namespace BlobLoader
                 SaveIni("Files", "RecentFolder", fbd.SelectedPath); // jeśli wybrano folder zapisz go do pliku konfiguracyjnego jako ostatnio wybrany
 
                 string[] fileNames = Directory.GetFiles(fbd.SelectedPath, "*.*", SearchOption.AllDirectories); // wybierz wszystkie pliki włącznie z podfolderami
-                
+
                 Array.Sort(fileNames, new NaturalStringComparer()); // sortowanie nazw plików tak aby cyfry było w kolejności
 
                 dataGridView.DataSource = null;
@@ -224,6 +224,7 @@ namespace BlobLoader
             }
             finally
             {
+                blobDataParameter.Dispose();
                 command.Dispose();
                 transaction.Dispose();
             }
