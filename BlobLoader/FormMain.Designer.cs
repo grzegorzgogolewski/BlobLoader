@@ -50,9 +50,23 @@
             this.labelHost = new System.Windows.Forms.Label();
             this.buttonFilter = new System.Windows.Forms.Button();
             this.verifyBackgroundWorker = new System.ComponentModel.BackgroundWorker();
+            this.groupBoxParams = new System.Windows.Forms.GroupBox();
+            this.textBoxIdRodzDok = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.textBoxDokId = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.labelDataD = new System.Windows.Forms.Label();
+            this.dateTimePickerDataD = new System.Windows.Forms.DateTimePicker();
+            this.textBoxUserId = new System.Windows.Forms.TextBox();
+            this.labelUserId = new System.Windows.Forms.Label();
+            this.buttonLoadCustom = new System.Windows.Forms.Button();
+            this.loadBlobCustomBackgroundWorker = new System.ComponentModel.BackgroundWorker();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.statusStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.groupBoxConnection.SuspendLayout();
+            this.groupBoxParams.SuspendLayout();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // oracleConnection
@@ -104,9 +118,9 @@
             // 
             // buttonLoad
             // 
-            this.buttonLoad.Location = new System.Drawing.Point(18, 275);
+            this.buttonLoad.Location = new System.Drawing.Point(12, 319);
             this.buttonLoad.Name = "buttonLoad";
-            this.buttonLoad.Size = new System.Drawing.Size(186, 25);
+            this.buttonLoad.Size = new System.Drawing.Size(204, 25);
             this.buttonLoad.TabIndex = 5;
             this.buttonLoad.Text = "Ładuj";
             this.buttonLoad.UseVisualStyleBackColor = true;
@@ -140,9 +154,9 @@
             // 
             // buttonSelectDirectoryBlobs
             // 
-            this.buttonSelectDirectoryBlobs.Location = new System.Drawing.Point(18, 188);
+            this.buttonSelectDirectoryBlobs.Location = new System.Drawing.Point(12, 176);
             this.buttonSelectDirectoryBlobs.Name = "buttonSelectDirectoryBlobs";
-            this.buttonSelectDirectoryBlobs.Size = new System.Drawing.Size(186, 25);
+            this.buttonSelectDirectoryBlobs.Size = new System.Drawing.Size(204, 25);
             this.buttonSelectDirectoryBlobs.TabIndex = 8;
             this.buttonSelectDirectoryBlobs.Text = "Wskaż katalog ze skanami";
             this.buttonSelectDirectoryBlobs.UseVisualStyleBackColor = true;
@@ -155,16 +169,16 @@
             this.dataGridView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.dataGridView.Location = new System.Drawing.Point(222, 17);
+            this.dataGridView.Location = new System.Drawing.Point(230, 17);
             this.dataGridView.MultiSelect = false;
             this.dataGridView.Name = "dataGridView";
             this.dataGridView.ReadOnly = true;
-            this.dataGridView.Size = new System.Drawing.Size(1258, 501);
+            this.dataGridView.Size = new System.Drawing.Size(1250, 501);
             this.dataGridView.TabIndex = 10;
             // 
             // buttonVerify
             // 
-            this.buttonVerify.Location = new System.Drawing.Point(18, 230);
+            this.buttonVerify.Location = new System.Drawing.Point(12, 207);
             this.buttonVerify.Name = "buttonVerify";
             this.buttonVerify.Size = new System.Drawing.Size(90, 25);
             this.buttonVerify.TabIndex = 11;
@@ -247,7 +261,7 @@
             // 
             // buttonFilter
             // 
-            this.buttonFilter.Location = new System.Drawing.Point(114, 230);
+            this.buttonFilter.Location = new System.Drawing.Point(126, 207);
             this.buttonFilter.Name = "buttonFilter";
             this.buttonFilter.Size = new System.Drawing.Size(90, 25);
             this.buttonFilter.TabIndex = 14;
@@ -263,11 +277,123 @@
             this.verifyBackgroundWorker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.VerifyBackgroundWorker_ProgressChanged);
             this.verifyBackgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.VerifyBackgroundWorker_RunWorkerCompleted);
             // 
+            // groupBoxParams
+            // 
+            this.groupBoxParams.Controls.Add(this.labelDataD);
+            this.groupBoxParams.Controls.Add(this.dateTimePickerDataD);
+            this.groupBoxParams.Controls.Add(this.textBoxUserId);
+            this.groupBoxParams.Controls.Add(this.labelUserId);
+            this.groupBoxParams.Location = new System.Drawing.Point(12, 238);
+            this.groupBoxParams.Name = "groupBoxParams";
+            this.groupBoxParams.Size = new System.Drawing.Size(204, 75);
+            this.groupBoxParams.TabIndex = 15;
+            this.groupBoxParams.TabStop = false;
+            this.groupBoxParams.Text = "Ustawienia";
+            // 
+            // textBoxIdRodzDok
+            // 
+            this.textBoxIdRodzDok.Location = new System.Drawing.Point(77, 45);
+            this.textBoxIdRodzDok.Name = "textBoxIdRodzDok";
+            this.textBoxIdRodzDok.Size = new System.Drawing.Size(115, 20);
+            this.textBoxIdRodzDok.TabIndex = 22;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(3, 48);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(68, 13);
+            this.label2.TabIndex = 23;
+            this.label2.Text = "id_rodz_dok:";
+            // 
+            // textBoxDokId
+            // 
+            this.textBoxDokId.Location = new System.Drawing.Point(56, 19);
+            this.textBoxDokId.Name = "textBoxDokId";
+            this.textBoxDokId.Size = new System.Drawing.Size(136, 20);
+            this.textBoxDokId.TabIndex = 20;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(3, 22);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(42, 13);
+            this.label1.TabIndex = 21;
+            this.label1.Text = "dok_id:";
+            // 
+            // labelDataD
+            // 
+            this.labelDataD.AutoSize = true;
+            this.labelDataD.Location = new System.Drawing.Point(3, 51);
+            this.labelDataD.Name = "labelDataD";
+            this.labelDataD.Size = new System.Drawing.Size(43, 13);
+            this.labelDataD.TabIndex = 19;
+            this.labelDataD.Text = "data_d:";
+            // 
+            // dateTimePickerDataD
+            // 
+            this.dateTimePickerDataD.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
+            this.dateTimePickerDataD.Location = new System.Drawing.Point(56, 45);
+            this.dateTimePickerDataD.Name = "dateTimePickerDataD";
+            this.dateTimePickerDataD.Size = new System.Drawing.Size(136, 20);
+            this.dateTimePickerDataD.TabIndex = 18;
+            // 
+            // textBoxUserId
+            // 
+            this.textBoxUserId.Location = new System.Drawing.Point(56, 19);
+            this.textBoxUserId.Name = "textBoxUserId";
+            this.textBoxUserId.Size = new System.Drawing.Size(136, 20);
+            this.textBoxUserId.TabIndex = 17;
+            // 
+            // labelUserId
+            // 
+            this.labelUserId.AutoSize = true;
+            this.labelUserId.Location = new System.Drawing.Point(3, 22);
+            this.labelUserId.Name = "labelUserId";
+            this.labelUserId.Size = new System.Drawing.Size(44, 13);
+            this.labelUserId.TabIndex = 17;
+            this.labelUserId.Text = "user_id:";
+            // 
+            // buttonLoadCustom
+            // 
+            this.buttonLoadCustom.Location = new System.Drawing.Point(12, 431);
+            this.buttonLoadCustom.Name = "buttonLoadCustom";
+            this.buttonLoadCustom.Size = new System.Drawing.Size(204, 25);
+            this.buttonLoadCustom.TabIndex = 16;
+            this.buttonLoadCustom.Text = "Ładuj custom";
+            this.buttonLoadCustom.UseVisualStyleBackColor = true;
+            this.buttonLoadCustom.Click += new System.EventHandler(this.ButtonLoadCustom_Click);
+            // 
+            // loadBlobCustomBackgroundWorker
+            // 
+            this.loadBlobCustomBackgroundWorker.WorkerReportsProgress = true;
+            this.loadBlobCustomBackgroundWorker.WorkerSupportsCancellation = true;
+            this.loadBlobCustomBackgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.LoadBlobCustomBackgroundWorker_DoWork);
+            this.loadBlobCustomBackgroundWorker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.LoadBlobCustomBackgroundWorker_ProgressChanged);
+            this.loadBlobCustomBackgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.LoadBlobCustomBackgroundWorker_RunWorkerCompleted);
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.textBoxDokId);
+            this.groupBox1.Controls.Add(this.label2);
+            this.groupBox1.Controls.Add(this.textBoxIdRodzDok);
+            this.groupBox1.Controls.Add(this.label1);
+            this.groupBox1.Location = new System.Drawing.Point(12, 350);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(204, 75);
+            this.groupBox1.TabIndex = 20;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Ustawienia custom";
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1492, 569);
+            this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this.buttonLoadCustom);
+            this.Controls.Add(this.groupBoxParams);
             this.Controls.Add(this.buttonFilter);
             this.Controls.Add(this.groupBoxConnection);
             this.Controls.Add(this.progressBar);
@@ -285,6 +411,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).EndInit();
             this.groupBoxConnection.ResumeLayout(false);
             this.groupBoxConnection.PerformLayout();
+            this.groupBoxParams.ResumeLayout(false);
+            this.groupBoxParams.PerformLayout();
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -314,6 +444,18 @@
         private System.Windows.Forms.Button buttonFilter;
         private System.ComponentModel.BackgroundWorker loadBlobBackgroundWorker;
         private System.ComponentModel.BackgroundWorker verifyBackgroundWorker;
+        private System.Windows.Forms.GroupBox groupBoxParams;
+        private System.Windows.Forms.TextBox textBoxUserId;
+        private System.Windows.Forms.Label labelUserId;
+        private System.Windows.Forms.DateTimePicker dateTimePickerDataD;
+        private System.Windows.Forms.Label labelDataD;
+        private System.Windows.Forms.TextBox textBoxIdRodzDok;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.TextBox textBoxDokId;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button buttonLoadCustom;
+        private System.ComponentModel.BackgroundWorker loadBlobCustomBackgroundWorker;
+        private System.Windows.Forms.GroupBox groupBox1;
     }
 }
 

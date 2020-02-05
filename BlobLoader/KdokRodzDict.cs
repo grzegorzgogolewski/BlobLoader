@@ -14,7 +14,6 @@ namespace BlobLoader
                 {
                     return kdokRodz.IdRodzDok;
                 }
-
             }
 
             return 0;
@@ -30,13 +29,9 @@ namespace BlobLoader
                 {
                     return kdokRodz.Opis;
                 }
-
             }
 
             return string.Empty;
         }
-
-
-
     }
 }

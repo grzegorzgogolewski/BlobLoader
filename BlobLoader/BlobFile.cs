@@ -32,7 +32,6 @@ namespace BlobLoader
             {
                 IdMaterialu = "BŁĄD!!!";
             }
-            
         }
     }
 }

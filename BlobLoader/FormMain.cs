@@ -7,14 +7,15 @@ using System.Windows.Forms;
 using Oracle.ManagedDataAccess.Client;
 using IniParser;
 using IniParser.Model;
+using System.Linq;
 
 namespace BlobLoader
 {
     public partial class FormMain : Form
     {
-        readonly List<BlobFile> _blobFiles = new List<BlobFile>();      // lista obiektów opisujących pliki do ładowania
-        readonly Operaty _dbOperaty = new Operaty();
-        readonly KdokRodzDict _dbKdokRodz = new KdokRodzDict();
+        private readonly List<BlobFile> _blobFiles = new List<BlobFile>();      // lista obiektów opisujących pliki do ładowania
+        private readonly Operaty _dbOperaty = new Operaty();
+        private readonly KdokRodzDict _dbKdokRodz = new KdokRodzDict();
 
         public FormMain()
         {
@@ -24,6 +25,8 @@ namespace BlobLoader
             buttonVerify.Enabled = false;
             buttonFilter.Enabled = false;
             buttonDisconnect.Enabled = false;
+
+            dateTimePickerDataD.CustomFormat = "yyyy-MM-dd HH:mm:ss";
         }
 
         // Ładowanie głównego okna aplikacji
@@ -36,8 +39,14 @@ namespace BlobLoader
             textBoxUser.Text = SecureText.UnProtect(ReadIni("Database", "User"));
             textBoxPass.Text = SecureText.UnProtect(ReadIni("Database", "Pass"));
 
+            textBoxUserId.Text = ReadIni("Params", "UserId");
+            dateTimePickerDataD.Text = ReadIni("Params", "DataD");
+
+            textBoxDokId.Text = ReadIni("Params", "DokId");
+            textBoxIdRodzDok.Text = ReadIni("Params", "IdRodzDok");
+
             // wyświetl tytuł aplikacji
-            Text = Application.ProductName + @" " + Application.ProductVersion;
+            Text = Application.ProductName + " " + Application.ProductVersion;
         }
 
         //Operacje uruchamiane podczas zamykania głównego okna aplikacji
@@ -66,13 +75,18 @@ namespace BlobLoader
                 SaveIni("Database", "User", SecureText.Protect(textBoxUser.Text));
                 SaveIni("Database", "Pass", SecureText.Protect(textBoxPass.Text)); // hasło dodatkowo jest kodowane
 
-                toolStripStatusLabel.Text = @"Połączono z bazą: " + textBoxDb.Text;
+                SaveIni("Params", "UserId", textBoxUserId.Text);
+                SaveIni("Params", "DataD", dateTimePickerDataD.Text);
+
+                SaveIni("Params", "DokId", textBoxDokId.Text);
+                SaveIni("Params", "IdRodzDok", textBoxIdRodzDok.Text);
+
+                toolStripStatusLabel.Text = "Połączono z bazą: " + textBoxDb.Text;
             }
             catch (Exception exception)
             {
                 toolStripStatusLabel.Text = exception.Message;
             }
-
         }
 
         // Obsługa rozłączenia z bazą danych
@@ -86,7 +100,7 @@ namespace BlobLoader
             buttonLoad.Enabled = false;
             buttonVerify.Enabled = false;
 
-            toolStripStatusLabel.Text = @"Rozłączono z bazą";
+            toolStripStatusLabel.Text = "Rozłączono z bazą";
         }
 
         // obsługa wyboru folderu ze skanami
@@ -104,6 +118,9 @@ namespace BlobLoader
                 SaveIni("Files", "RecentFolder", fbd.SelectedPath); // jeśli wybrano folder zapisz go do pliku konfiguracyjnego jako ostatnio wybrany
 
                 string[] fileNames = Directory.GetFiles(fbd.SelectedPath, "*.*", SearchOption.AllDirectories); // wybierz wszystkie pliki włącznie z podfolderami
+
+                fileNames = fileNames.Where(val => !val.EndsWith(".XML", StringComparison.OrdinalIgnoreCase)).ToArray();    //  pomiń pliki XML
+                fileNames = fileNames.Where(val => !val.EndsWith(".WKT", StringComparison.OrdinalIgnoreCase)).ToArray();    //  pomiń pliki WKT
 
                 Array.Sort(fileNames, new NaturalStringComparer()); // sortowanie nazw plików tak aby cyfry było w kolejności
 
@@ -123,8 +140,7 @@ namespace BlobLoader
 
                 dataGridView.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);   // automatyczna szerokość dla każdej kolumny
 
-                toolStripStatusLabel.Text = $@"Liczba wczytanych plików: {_blobFiles.Count}";
-
+                toolStripStatusLabel.Text = $"Liczba wczytanych plików: {_blobFiles.Count}";
             }
         }
 
@@ -163,10 +179,10 @@ namespace BlobLoader
                     string fileFullName = blobFile.FullFileName;        // pełna nazwa pliku włączenie ze ścieżką
                     string fileShortName = blobFile.FileName;           // tylko nazwa pliku
                     int fileSize = blobFile.FileSize;                   // rozmiar pliku
-                     
+
                     filesSize += fileSize;      // zsumuj wielkość plików
 
-                    toolStripStatusLabel.Text = $@"Ładowanie pliku {fileCounter}/{dataGridView.Rows.Count}: {fileFullName}";
+                    toolStripStatusLabel.Text = $"Ładowanie pliku {fileCounter}/{dataGridView.Rows.Count}: {fileFullName}";
 
                     // ----------------------------------------------------------------------------
                     // pobierz zawartość pliku
@@ -184,7 +200,7 @@ namespace BlobLoader
                     int idFileSq = int.Parse(command.ExecuteScalar().ToString());
 
                     // polecenie dodania pliku do blob
-                    command.CommandText = $"INSERT INTO blob.kdok_pliki (id_file, pieczec_pliku, typ_pliku, data) VALUES({idFileSq}, {idFileSq}, '{fileShortName}', :blobDataParameter)";
+                    command.CommandText = $"INSERT INTO blob.kdok_pliki (id_file, pieczec_pliku, typ_pliku, data, data_d) VALUES({idFileSq}, {idFileSq}, '{fileShortName}', :blobDataParameter, to_date('{dateTimePickerDataD.Text}', 'YYYY-MM-DD HH24:MI:SS'))";
 
                     command.Parameters.Clear();                     // przygotowanie parametru polecenia
                     command.Parameters.Add(blobDataParameter);      // którym jest plik binarny
@@ -202,9 +218,9 @@ namespace BlobLoader
                     int idGr = blobFile.IdOp;
                     string path = blobFile.FullFileName;
                     int idRodzDok = blobFile.PrefixId;
-                    int userId = 696;
+                    int userId = Convert.ToInt32(textBoxUserId.Text);
 
-                    command.CommandText = $"INSERT INTO KDOK_WSK(ID_DOK, WL, ID_GR, ID_FILE, PATH, ID_RODZ_DOK, OPIS, USER_ID, DATA_D) VALUES({idDokSq}, 'operat', {idGr}, {idFileSq}, '{path}', {idRodzDok}, '', {userId}, SYSDATE)";
+                    command.CommandText = $"INSERT INTO KDOK_WSK(ID_DOK, WL, ID_GR, ID_FILE, PATH, ID_RODZ_DOK, OPIS, USER_ID, DATA_D) VALUES({idDokSq}, 'operat', {idGr}, {idFileSq}, '{path}', {idRodzDok}, '', {userId}, to_date('{dateTimePickerDataD.Text}', 'YYYY-MM-DD HH24:MI:SS'))";
                     command.ExecuteNonQuery();
 
                     // ----------------------------------------------------------------------------
@@ -215,7 +231,7 @@ namespace BlobLoader
 
                 transaction.Commit();       // zatwierdzenie transakcji ładowania
 
-                toolStripStatusLabel.Text = $@"Załadowano {dataGridView.Rows.Count} plików o łącznym rozmiarze {filesSize / 1024} MB";
+                toolStripStatusLabel.Text = $"Załadowano {dataGridView.Rows.Count} plików o łącznym rozmiarze {filesSize / 1024} MB";
             }
             catch (Exception exception)
             {
@@ -228,7 +244,6 @@ namespace BlobLoader
                 command.Dispose();
                 transaction.Dispose();
             }
-            
         }
 
         private void LoadBlobBackgroundWorkerOnProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -280,7 +295,7 @@ namespace BlobLoader
 
             dataGridView.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);       // automatyczna szerokość dla każdej kolumny
 
-            toolStripStatusLabel.Text = $@"Liczba błędów: {_blobFiles.Count}";
+            toolStripStatusLabel.Text = $"Liczba błędów: {_blobFiles.Count}";
         }
 
         private void ButtonVerify_Click(object sender, EventArgs e)
@@ -299,12 +314,12 @@ namespace BlobLoader
             // pobierz listę operatów z bazy Ewid
             // ------------------------------------------------------------------------------------
 
-            toolStripStatusLabel.Text = @"Pobieranie listy operatów...";
+            toolStripStatusLabel.Text = "Pobieranie listy operatów...";
 
             _dbOperaty.Clear(); // wyczyść listę obiektów
 
             OracleCommand command = oracleConnection.CreateCommand();
-            command.CommandText = @"SELECT idop, sygnatura, idmaterialu FROM ewid4.osr_operat ORDER BY idop";
+            command.CommandText = "SELECT idop, sygnatura, idmaterialu FROM ewid4.osr_operat ORDER BY idop";
             OracleDataReader reader = command.ExecuteReader();
 
             try
@@ -331,12 +346,12 @@ namespace BlobLoader
             // pobierz listę rodzajów dokumentów z bazy Ewid
             // ------------------------------------------------------------------------------------
 
-            toolStripStatusLabel.Text = @"Pobieranie rodzajów dokumentów...";
+            toolStripStatusLabel.Text = "Pobieranie rodzajów dokumentów...";
 
             _dbKdokRodz.Clear(); // wyczyść listę obiektów
 
             command = oracleConnection.CreateCommand();
-            command.CommandText = @"SELECT id_rodz_dok, opis, prefix, nazdok_id, gml_val FROM ewid4.kdok_rodz ORDER BY id_rodz_dok";
+            command.CommandText = "SELECT id_rodz_dok, opis, prefix, nazdok_id, gml_val FROM ewid4.kdok_rodz ORDER BY id_rodz_dok";
             reader = command.ExecuteReader();
 
             try
@@ -365,7 +380,7 @@ namespace BlobLoader
             // Sprawdź czy operaty z folderów występują w bazie
             // ------------------------------------------------------------------------------------
 
-            toolStripStatusLabel.Text = @"Sprawdzanie numerów operatów..";
+            toolStripStatusLabel.Text = "Sprawdzanie numerów operatów..";
 
             int errorCount = 0;
 
@@ -385,17 +400,16 @@ namespace BlobLoader
                     default:
                         errorCount++;
                         blobFile.Status = "wiele takich samych operatów";
-                        MessageBox.Show(@"Więcej niż jeden operat o nazwie: " + blobFile.IdMaterialu);
+                        MessageBox.Show("Więcej niż jeden operat o nazwie: " + blobFile.IdMaterialu);
                         break;
                 }
-
             }
 
             // ------------------------------------------------------------------------------------
             // Sprawdź czy pliki mają właściwie prefiksy
             // ------------------------------------------------------------------------------------
 
-            toolStripStatusLabel.Text = @"Pobieranie prefiksów...";
+            toolStripStatusLabel.Text = "Pobieranie prefiksów...";
 
             foreach (BlobFile blobFile in _blobFiles)
             {
@@ -411,14 +425,13 @@ namespace BlobLoader
                     }
                     else
                     {
-                        blobFile.Status += ", " + "błąd prefiksu";
+                        blobFile.Status += ", błąd prefiksu";
                     }
                 }
                 else if (blobFile.Status == null)   // jeśli odnaleziono prefix a status jest nieuzupełniony
                 {
                     blobFile.Status = "OK";
                 }
-
             }
 
             //toolStripStatusLabel.Text = @"Odświeżanie listy...";
@@ -428,13 +441,11 @@ namespace BlobLoader
             // Zaznacz kolorami wiersze w zależności od statusu
             // ------------------------------------------------------------------------------------
 
-            toolStripStatusLabel.Text = $@"Liczba błędów: {errorCount} / {_blobFiles.Count}";
-
+            toolStripStatusLabel.Text = $"Liczba błędów: {errorCount} / {_blobFiles.Count}";
         }
 
         private void VerifyBackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-
         }
 
         private void VerifyBackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -456,7 +467,7 @@ namespace BlobLoader
 
             dataGridView.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);   // automatyczna szerokość dla każdej kolumny
 
-            if (isError) // jeśli są błędy 
+            if (isError) // jeśli są błędy
             {
                 buttonFilter.Enabled = true;
                 buttonLoad.Enabled = false;
@@ -469,8 +480,120 @@ namespace BlobLoader
 
             buttonSelectDirectoryBlobs.Enabled = true;
             buttonVerify.Enabled = true;
+        }
 
+        private void ButtonLoadCustom_Click(object sender, EventArgs e)
+        {
+            loadBlobCustomBackgroundWorker.RunWorkerAsync();
+        }
 
+        private void LoadBlobCustomBackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            OracleTransaction transaction = oracleConnection.BeginTransaction();    // transakcja ładowania plików
+
+            OracleCommand command = oracleConnection.CreateCommand();   // polecenie dla połączenia
+
+            // parametr dla polecenia ładowania pliku do blob - binarna zawartość pliku
+            OracleParameter blobDataParameter = new OracleParameter
+            {
+                OracleDbType = OracleDbType.Blob,
+                ParameterName = "blobDataParameter"
+            };
+
+            try
+            {
+                int fileCounter = 0;    // licznik plików załadowanych. potrzebny do statusu i obliczenia procent ładowania
+                int filesSize = 0;      // łączny rozmiar wszystkich załadowanych plików
+
+                // dla każdego wskazanego pliku
+                foreach (BlobFile blobFile in _blobFiles)
+                {
+                    fileCounter++;      // licznik załadowanych plików
+
+                    string fileFullName = blobFile.FullFileName;        // pełna nazwa pliku włączenie ze ścieżką
+                    string fileShortName = blobFile.FileName;           // tylko nazwa pliku
+                    int fileSize = blobFile.FileSize;                   // rozmiar pliku
+
+                    filesSize += fileSize;      // zsumuj wielkość plików
+
+                    toolStripStatusLabel.Text = $"Ładowanie pliku {fileCounter}/{dataGridView.Rows.Count}: {fileFullName}";
+
+                    // ----------------------------------------------------------------------------
+                    // pobierz zawartość pliku
+                    // ----------------------------------------------------------------------------
+                    FileStream fs = new FileStream(fileFullName, FileMode.Open, FileAccess.Read);
+                    byte[] blobDataValue = new byte[fs.Length];
+                    fs.Read(blobDataValue, 0, Convert.ToInt32(fs.Length));
+                    fs.Close();
+                    // ----------------------------------------------------------------------------
+
+                    // ----------------------------------------------------------------------------
+                    // ładowanie pliku do BLOB
+                    // ----------------------------------------------------------------------------
+                    command.CommandText = "SELECT blob.kdok_plikisq.nextval FROM dual";     // pobranie sekwencji dla ładowanego rekordu BLOB
+                    int idFileSq = int.Parse(command.ExecuteScalar().ToString());
+
+                    // polecenie dodania pliku do blob
+                    command.CommandText = $"INSERT INTO blob.kdok_pliki (id_file, pieczec_pliku, typ_pliku, data, data_d) VALUES({idFileSq}, {idFileSq}, '{fileShortName}', :blobDataParameter, to_date('{dateTimePickerDataD.Text}', 'YYYY-MM-DD HH24:MI:SS'))";
+
+                    command.Parameters.Clear();                     // przygotowanie parametru polecenia
+                    command.Parameters.Add(blobDataParameter);      // którym jest plik binarny
+                    blobDataParameter.Value = blobDataValue;        // ze skanem
+
+                    command.ExecuteNonQuery();                      // wykonaj polecenie
+                    // ----------------------------------------------------------------------------
+
+                    // ----------------------------------------------------------------------------
+                    // ładowanie rekordu do KDOK_WSK
+                    // ----------------------------------------------------------------------------
+                    command.CommandText = "SELECT ewid4.kdok_wsksq.nextval FROM dual";     // pobranie sekwencji dla ładowanego rekordu kdok_wsk
+                    int idDokSq = int.Parse(command.ExecuteScalar().ToString());
+
+                    int idGr = Convert.ToInt32(textBoxDokId.Text);
+                    string path = blobFile.FullFileName;
+                    
+                    int idRodzDok = Convert.ToInt32(textBoxIdRodzDok.Text);
+                    //int idRodzDok = blobFile.PrefixId;
+
+                    int userId = Convert.ToInt32(textBoxUserId.Text);
+
+                    //command.CommandText = $"INSERT INTO KDOK_WSK(ID_DOK, WL, ID_GR, ID_FILE, PATH, ID_RODZ_DOK, OPIS, USER_ID, DATA_D) VALUES({idDokSq}, 'dzzgl', {idGr}, {idFileSq}, '{path}', {idRodzDok}, '', {userId}, to_date('{dateTimePickerDataD.Text}', 'YYYY-MM-DD HH24:MI:SS'))";
+                    //command.CommandText = $"INSERT INTO KDOK_WSK(ID_DOK, WL, ID_GR, ID_FILE, PATH, ID_RODZ_DOK, OPIS, USER_ID, DATA_D) VALUES({idDokSq}, 'dok.rast.', {idGr}, {idFileSq}, '{path}', {idRodzDok}, '', {userId}, to_date('{dateTimePickerDataD.Text}', 'YYYY-MM-DD HH24:MI:SS'))";
+                    command.CommandText = $"INSERT INTO KDOK_WSK(ID_DOK, WL, ID_GR, ID_FILE, PATH, ID_RODZ_DOK, OPIS, USER_ID, DATA_D) VALUES({idDokSq}, 'mapa', {idGr}, {idFileSq}, '{path}', {idRodzDok}, '', {userId}, to_date('{dateTimePickerDataD.Text}', 'YYYY-MM-DD HH24:MI:SS'))";
+                    
+                    command.ExecuteNonQuery();
+
+                    // ----------------------------------------------------------------------------
+
+                    int percentage = (fileCounter * 100)/ dataGridView.Rows.Count;      // oblicz procentowe zaawansowanie ładowania
+                    loadBlobCustomBackgroundWorker.ReportProgress(percentage);                // zaraportuj zaawansowanie
+                }
+
+                transaction.Commit();       // zatwierdzenie transakcji ładowania
+
+                toolStripStatusLabel.Text = $"Załadowano {dataGridView.Rows.Count} plików o łącznym rozmiarze {filesSize / 1024} MB";
+            }
+            catch (Exception exception)
+            {
+                transaction.Rollback();     // w przypadku wystąpienia błędu wycofaj transakcje
+                toolStripStatusLabel.Text = exception.Message;
+            }
+            finally
+            {
+                blobDataParameter.Dispose();
+                command.Dispose();
+                transaction.Dispose();
+            }
+        }
+
+        private void LoadBlobCustomBackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            progressBar.Value = e.ProgressPercentage;
+        }
+
+        private void LoadBlobCustomBackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            MessageBox.Show("Koniec");
         }
     }
 }
