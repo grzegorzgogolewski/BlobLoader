@@ -28,7 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.oracleConnection = new Oracle.ManagedDataAccess.Client.OracleConnection();
+            this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
             this.textBoxHost = new System.Windows.Forms.TextBox();
             this.textBoxDb = new System.Windows.Forms.TextBox();
             this.textBoxUser = new System.Windows.Forms.TextBox();
@@ -40,6 +41,8 @@
             this.buttonDisconnect = new System.Windows.Forms.Button();
             this.buttonSelectDirectoryBlobs = new System.Windows.Forms.Button();
             this.dataGridView = new System.Windows.Forms.DataGridView();
+            this.contextMenuStripDataGrid = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.toolStripMenuItemCopy = new System.Windows.Forms.ToolStripMenuItem();
             this.buttonVerify = new System.Windows.Forms.Button();
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.loadBlobBackgroundWorker = new System.ComponentModel.BackgroundWorker();
@@ -51,27 +54,25 @@
             this.buttonFilter = new System.Windows.Forms.Button();
             this.verifyBackgroundWorker = new System.ComponentModel.BackgroundWorker();
             this.groupBoxParams = new System.Windows.Forms.GroupBox();
-            this.textBoxIdRodzDok = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.textBoxDokId = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
             this.labelDataD = new System.Windows.Forms.Label();
             this.dateTimePickerDataD = new System.Windows.Forms.DateTimePicker();
             this.textBoxUserId = new System.Windows.Forms.TextBox();
             this.labelUserId = new System.Windows.Forms.Label();
+            this.textBoxIdRodzDok = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.textBoxDokId = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
             this.buttonLoadCustom = new System.Windows.Forms.Button();
             this.loadBlobCustomBackgroundWorker = new System.ComponentModel.BackgroundWorker();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.checkBoxCustomDict = new System.Windows.Forms.CheckBox();
             this.statusStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
+            this.contextMenuStripDataGrid.SuspendLayout();
             this.groupBoxConnection.SuspendLayout();
             this.groupBoxParams.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // oracleConnection
-            // 
-            this.oracleConnection.Credential = null;
             // 
             // textBoxHost
             // 
@@ -118,7 +119,7 @@
             // 
             // buttonLoad
             // 
-            this.buttonLoad.Location = new System.Drawing.Point(12, 319);
+            this.buttonLoad.Location = new System.Drawing.Point(12, 346);
             this.buttonLoad.Name = "buttonLoad";
             this.buttonLoad.Size = new System.Drawing.Size(204, 25);
             this.buttonLoad.TabIndex = 5;
@@ -130,7 +131,7 @@
             // 
             this.statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel});
-            this.statusStrip.Location = new System.Drawing.Point(0, 547);
+            this.statusStrip.Location = new System.Drawing.Point(0, 512);
             this.statusStrip.Name = "statusStrip";
             this.statusStrip.Size = new System.Drawing.Size(1492, 22);
             this.statusStrip.TabIndex = 6;
@@ -166,15 +167,31 @@
             // 
             this.dataGridView.AllowUserToAddRows = false;
             this.dataGridView.AllowUserToDeleteRows = false;
+            this.dataGridView.AllowUserToResizeRows = false;
             this.dataGridView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.dataGridView.ClipboardCopyMode = System.Windows.Forms.DataGridViewClipboardCopyMode.EnableAlwaysIncludeHeaderText;
+            this.dataGridView.ContextMenuStrip = this.contextMenuStripDataGrid;
             this.dataGridView.Location = new System.Drawing.Point(230, 17);
-            this.dataGridView.MultiSelect = false;
             this.dataGridView.Name = "dataGridView";
             this.dataGridView.ReadOnly = true;
-            this.dataGridView.Size = new System.Drawing.Size(1250, 501);
+            this.dataGridView.Size = new System.Drawing.Size(1250, 466);
             this.dataGridView.TabIndex = 10;
+            // 
+            // contextMenuStripDataGrid
+            // 
+            this.contextMenuStripDataGrid.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripMenuItemCopy});
+            this.contextMenuStripDataGrid.Name = "contextMenuStripDataGrid";
+            this.contextMenuStripDataGrid.Size = new System.Drawing.Size(109, 26);
+            // 
+            // toolStripMenuItemCopy
+            // 
+            this.toolStripMenuItemCopy.Name = "toolStripMenuItemCopy";
+            this.toolStripMenuItemCopy.Size = new System.Drawing.Size(108, 22);
+            this.toolStripMenuItemCopy.Text = "Kopiuj";
+            this.toolStripMenuItemCopy.Click += new System.EventHandler(this.ToolStripMenuItemCopy_Click);
             // 
             // buttonVerify
             // 
@@ -189,7 +206,7 @@
             // progressBar
             // 
             this.progressBar.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.progressBar.Location = new System.Drawing.Point(0, 524);
+            this.progressBar.Location = new System.Drawing.Point(0, 489);
             this.progressBar.Name = "progressBar";
             this.progressBar.Size = new System.Drawing.Size(1492, 23);
             this.progressBar.Step = 1;
@@ -279,16 +296,52 @@
             // 
             // groupBoxParams
             // 
+            this.groupBoxParams.Controls.Add(this.checkBoxCustomDict);
             this.groupBoxParams.Controls.Add(this.labelDataD);
             this.groupBoxParams.Controls.Add(this.dateTimePickerDataD);
             this.groupBoxParams.Controls.Add(this.textBoxUserId);
             this.groupBoxParams.Controls.Add(this.labelUserId);
             this.groupBoxParams.Location = new System.Drawing.Point(12, 238);
             this.groupBoxParams.Name = "groupBoxParams";
-            this.groupBoxParams.Size = new System.Drawing.Size(204, 75);
+            this.groupBoxParams.Size = new System.Drawing.Size(204, 102);
             this.groupBoxParams.TabIndex = 15;
             this.groupBoxParams.TabStop = false;
             this.groupBoxParams.Text = "Ustawienia";
+            // 
+            // labelDataD
+            // 
+            this.labelDataD.AutoSize = true;
+            this.labelDataD.Location = new System.Drawing.Point(3, 51);
+            this.labelDataD.Name = "labelDataD";
+            this.labelDataD.Size = new System.Drawing.Size(43, 13);
+            this.labelDataD.TabIndex = 19;
+            this.labelDataD.Text = "data_d:";
+            // 
+            // dateTimePickerDataD
+            // 
+            this.dateTimePickerDataD.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
+            this.dateTimePickerDataD.Location = new System.Drawing.Point(56, 45);
+            this.dateTimePickerDataD.Name = "dateTimePickerDataD";
+            this.dateTimePickerDataD.Size = new System.Drawing.Size(136, 20);
+            this.dateTimePickerDataD.TabIndex = 18;
+            this.dateTimePickerDataD.ValueChanged += new System.EventHandler(this.DateTimePickerDataD_ValueChanged);
+            // 
+            // textBoxUserId
+            // 
+            this.textBoxUserId.Location = new System.Drawing.Point(56, 19);
+            this.textBoxUserId.Name = "textBoxUserId";
+            this.textBoxUserId.Size = new System.Drawing.Size(136, 20);
+            this.textBoxUserId.TabIndex = 17;
+            this.textBoxUserId.TextChanged += new System.EventHandler(this.TextBoxUserId_TextChanged);
+            // 
+            // labelUserId
+            // 
+            this.labelUserId.AutoSize = true;
+            this.labelUserId.Location = new System.Drawing.Point(3, 22);
+            this.labelUserId.Name = "labelUserId";
+            this.labelUserId.Size = new System.Drawing.Size(44, 13);
+            this.labelUserId.TabIndex = 17;
+            this.labelUserId.Text = "user_id:";
             // 
             // textBoxIdRodzDok
             // 
@@ -322,42 +375,9 @@
             this.label1.TabIndex = 21;
             this.label1.Text = "dok_id:";
             // 
-            // labelDataD
-            // 
-            this.labelDataD.AutoSize = true;
-            this.labelDataD.Location = new System.Drawing.Point(3, 51);
-            this.labelDataD.Name = "labelDataD";
-            this.labelDataD.Size = new System.Drawing.Size(43, 13);
-            this.labelDataD.TabIndex = 19;
-            this.labelDataD.Text = "data_d:";
-            // 
-            // dateTimePickerDataD
-            // 
-            this.dateTimePickerDataD.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
-            this.dateTimePickerDataD.Location = new System.Drawing.Point(56, 45);
-            this.dateTimePickerDataD.Name = "dateTimePickerDataD";
-            this.dateTimePickerDataD.Size = new System.Drawing.Size(136, 20);
-            this.dateTimePickerDataD.TabIndex = 18;
-            // 
-            // textBoxUserId
-            // 
-            this.textBoxUserId.Location = new System.Drawing.Point(56, 19);
-            this.textBoxUserId.Name = "textBoxUserId";
-            this.textBoxUserId.Size = new System.Drawing.Size(136, 20);
-            this.textBoxUserId.TabIndex = 17;
-            // 
-            // labelUserId
-            // 
-            this.labelUserId.AutoSize = true;
-            this.labelUserId.Location = new System.Drawing.Point(3, 22);
-            this.labelUserId.Name = "labelUserId";
-            this.labelUserId.Size = new System.Drawing.Size(44, 13);
-            this.labelUserId.TabIndex = 17;
-            this.labelUserId.Text = "user_id:";
-            // 
             // buttonLoadCustom
             // 
-            this.buttonLoadCustom.Location = new System.Drawing.Point(12, 431);
+            this.buttonLoadCustom.Location = new System.Drawing.Point(12, 458);
             this.buttonLoadCustom.Name = "buttonLoadCustom";
             this.buttonLoadCustom.Size = new System.Drawing.Size(204, 25);
             this.buttonLoadCustom.TabIndex = 16;
@@ -379,18 +399,28 @@
             this.groupBox1.Controls.Add(this.label2);
             this.groupBox1.Controls.Add(this.textBoxIdRodzDok);
             this.groupBox1.Controls.Add(this.label1);
-            this.groupBox1.Location = new System.Drawing.Point(12, 350);
+            this.groupBox1.Location = new System.Drawing.Point(12, 377);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(204, 75);
             this.groupBox1.TabIndex = 20;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Ustawienia custom";
             // 
+            // checkBoxCustomDict
+            // 
+            this.checkBoxCustomDict.AutoSize = true;
+            this.checkBoxCustomDict.Location = new System.Drawing.Point(6, 79);
+            this.checkBoxCustomDict.Name = "checkBoxCustomDict";
+            this.checkBoxCustomDict.Size = new System.Drawing.Size(142, 17);
+            this.checkBoxCustomDict.TabIndex = 20;
+            this.checkBoxCustomDict.Text = "Niestandardowy słownik";
+            this.checkBoxCustomDict.UseVisualStyleBackColor = true;
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1492, 569);
+            this.ClientSize = new System.Drawing.Size(1492, 534);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.buttonLoadCustom);
             this.Controls.Add(this.groupBoxParams);
@@ -402,6 +432,7 @@
             this.Controls.Add(this.buttonSelectDirectoryBlobs);
             this.Controls.Add(this.statusStrip);
             this.Controls.Add(this.buttonLoad);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "FormMain";
             this.Text = "FormMain";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormMain_FormClosing);
@@ -409,6 +440,7 @@
             this.statusStrip.ResumeLayout(false);
             this.statusStrip.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).EndInit();
+            this.contextMenuStripDataGrid.ResumeLayout(false);
             this.groupBoxConnection.ResumeLayout(false);
             this.groupBoxConnection.PerformLayout();
             this.groupBoxParams.ResumeLayout(false);
@@ -422,7 +454,6 @@
 
         #endregion
 
-        private Oracle.ManagedDataAccess.Client.OracleConnection oracleConnection;
         private System.Windows.Forms.TextBox textBoxHost;
         private System.Windows.Forms.TextBox textBoxDb;
         private System.Windows.Forms.TextBox textBoxUser;
@@ -456,6 +487,9 @@
         private System.Windows.Forms.Button buttonLoadCustom;
         private System.ComponentModel.BackgroundWorker loadBlobCustomBackgroundWorker;
         private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStripDataGrid;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemCopy;
+        private System.Windows.Forms.CheckBox checkBoxCustomDict;
     }
 }
 

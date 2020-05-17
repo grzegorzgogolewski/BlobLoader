@@ -27,6 +27,11 @@ namespace BlobLoader
             {
                 string fullPath = Path.GetDirectoryName(pathFileName)?.TrimEnd(Path.DirectorySeparatorChar);
                 IdMaterialu = fullPath?.Split(Path.DirectorySeparatorChar).Last();
+
+                //if (!IdMaterialu.Contains("P.0405"))
+                //{
+                //    throw new Exception("Błąd P.!");
+                //}
             }
             catch (ArgumentOutOfRangeException)
             {

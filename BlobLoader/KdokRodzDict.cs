@@ -2,11 +2,11 @@
 
 namespace BlobLoader
 {
-    public class KdokRodzDict : Dictionary<int, KdokRodz>
+    public class KdokRodzDict : List<KdokRodz>
     {
         public int GetIdRodzDok(string fileName)
         {
-            foreach (KdokRodz kdokRodz in Values)
+            foreach (KdokRodz kdokRodz in this)
             {
                 string prefix = kdokRodz.Prefix;
 
@@ -21,7 +21,7 @@ namespace BlobLoader
 
         public string GetOpis(string fileName)
         {
-            foreach (KdokRodz kdokRodz in Values)
+            foreach (KdokRodz kdokRodz in this)
             {
                 string prefix = kdokRodz.Prefix;
 
