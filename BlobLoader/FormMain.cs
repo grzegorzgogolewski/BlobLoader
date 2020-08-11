@@ -8,6 +8,7 @@ using Oracle.ManagedDataAccess.Client;
 using IniParser;
 using IniParser.Model;
 using System.Linq;
+using License;
 
 namespace BlobLoader
 {
@@ -115,7 +116,8 @@ namespace BlobLoader
             if (result == DialogResult.OK)
             {
                 SaveIni("Files", "RecentFolder", fbd.SelectedPath); // jeśli wybrano folder zapisz go do pliku konfiguracyjnego jako ostatnio wybrany
-
+                
+                //todo zmienić w zależności od tego co jest ładowane
                 string[] fileNames = Directory.GetFiles(fbd.SelectedPath, "*.*", SearchOption.AllDirectories); // wybierz wszystkie pliki włącznie z podfolderami
 
                 fileNames = fileNames.Where(val => !val.EndsWith(".XML", StringComparison.OrdinalIgnoreCase)).ToArray();    //  pomiń pliki XML
@@ -139,7 +141,10 @@ namespace BlobLoader
 
                 dataGridView.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);   // automatyczna szerokość dla każdej kolumny
 
-                toolStripStatusLabel.Text = $"Liczba wczytanych plików: {_blobFiles.Count}";
+                int filesSize = _blobFiles.Aggregate(0, (current, bFile) => current + bFile.FileSize);
+
+                toolStripStatusLabel.Text = $"Liczba wczytanych plików: {_blobFiles.Count}, o rozmiarze: {filesSize / 1024} MB";
+
             }
         }
 
@@ -170,6 +175,8 @@ namespace BlobLoader
                 int fileCounter = 0;    // licznik plików załadowanych. potrzebny do statusu i obliczenia procent ładowania
                 int filesSize = 0;      // łączny rozmiar wszystkich załadowanych plików
 
+                int filesSizeAll = _blobFiles.Aggregate(0, (current, bFile) => current + bFile.FileSize);
+
                 // dla każdego wskazanego pliku
                 foreach (BlobFile blobFile in _blobFiles)
                 {
@@ -181,7 +188,7 @@ namespace BlobLoader
 
                     filesSize += fileSize;      // zsumuj wielkość plików
 
-                    toolStripStatusLabel.Text = $"Ładowanie pliku {fileCounter}/{dataGridView.Rows.Count}: {fileFullName} [{Math.Round(fileSize / 1024.0, 2) } MB]";
+                    toolStripStatusLabel.Text = $"Ładowanie pliku {fileCounter}/{_blobFiles.Count} [{filesSize / 1024}/{filesSizeAll / 1024} MB]: {fileFullName} [{Math.Round(fileSize / 1024.0, 2) } MB]";
 
                     // ----------------------------------------------------------------------------
                     // pobierz zawartość pliku
@@ -219,7 +226,13 @@ namespace BlobLoader
                     int idRodzDok = blobFile.PrefixId;
                     int userId = Convert.ToInt32(textBoxUserId.Text);
 
-                    command.CommandText = $"INSERT INTO KDOK_WSK(ID_DOK, WL, ID_GR, ID_FILE, PATH, ID_RODZ_DOK, OPIS, USER_ID, DATA_D) VALUES({idDokSq}, 'operat', {idGr}, {idFileSq}, '{path}', {idRodzDok}, '', {userId}, to_date('{dateTimePickerDataD.Text}', 'YYYY-MM-DD HH24:MI:SS'))";
+                    command.CommandText = "INSERT INTO KDOK_WSK(ID_DOK, WL, ID_GR, ID_FILE, PATH, ID_RODZ_DOK, OPIS, USER_ID, DATA_D, USERM_ID, DATA_M) " +
+                                          $"VALUES({idDokSq}, 'operat', {idGr}, {idFileSq}, '{path}', {idRodzDok}, '', {userId}, to_date('{dateTimePickerDataD.Text}', 'YYYY-MM-DD HH24:MI:SS'), {userId}, to_date('{dateTimePickerDataD.Text}', 'YYYY-MM-DD HH24:MI:SS'))";
+
+                    //  STARSZA WERSJA EWID
+                    //command.CommandText = "INSERT INTO KDOK_WSK(ID_DOK, WL, ID_GR, ID_FILE, PATH, ID_RODZ_DOK, OPIS, USER_ID, DATA_D) " +
+                    //                      $"VALUES({idDokSq}, 'operat', {idGr}, {idFileSq}, '{path}', {idRodzDok}, '', {userId}, to_date('{dateTimePickerDataD.Text}', 'YYYY-MM-DD HH24:MI:SS'))";
+
                     command.ExecuteNonQuery();
 
                     // ----------------------------------------------------------------------------
@@ -590,6 +603,8 @@ namespace BlobLoader
                 int fileCounter = 0;    // licznik plików załadowanych. potrzebny do statusu i obliczenia procent ładowania
                 int filesSize = 0;      // łączny rozmiar wszystkich załadowanych plików
 
+                int filesSizeAll = _blobFiles.Aggregate(0, (current, bFile) => current + bFile.FileSize);
+
                 // dla każdego wskazanego pliku
                 foreach (BlobFile blobFile in _blobFiles)
                 {
@@ -601,7 +616,7 @@ namespace BlobLoader
 
                     filesSize += fileSize;      // zsumuj wielkość plików
 
-                    toolStripStatusLabel.Text = $"Ładowanie pliku {fileCounter}/{dataGridView.Rows.Count}: {fileFullName} [{Math.Round(fileSize / 1024.0, 2) } MB]";
+                    toolStripStatusLabel.Text = $"Ładowanie pliku {fileCounter}/{_blobFiles.Count} [{filesSize / 1024}/{filesSizeAll / 1024} MB]: {fileFullName} [{Math.Round(fileSize / 1024.0, 2) } MB]";
 
                     // ----------------------------------------------------------------------------
                     // pobierz zawartość pliku
@@ -637,13 +652,23 @@ namespace BlobLoader
                     int idGr = Convert.ToInt32(textBoxDokId.Text);
                     string path = blobFile.FullFileName;
                     
-                    //int idRodzDok = Convert.ToInt32(textBoxIdRodzDok.Text);
-                    int idRodzDok = blobFile.PrefixId;
+                    int idRodzDok = Convert.ToInt32(textBoxIdRodzDok.Text);
+
+                    if (idRodzDok == 0)
+                    {
+                        idRodzDok = blobFile.PrefixId;
+                    }
 
                     int userId = Convert.ToInt32(textBoxUserId.Text);
 
+                    command.CommandText = "INSERT INTO KDOK_WSK(ID_DOK, WL, ID_GR, ID_FILE, PATH, ID_RODZ_DOK, OPIS, USER_ID, DATA_D, USERM_ID, DATA_M) " +
+                                          $"VALUES({idDokSq}, 'dok.rast.', {idGr}, {idFileSq}, '{path}', {idRodzDok}, '', {userId}, to_date('{dateTimePickerDataD.Text}', 'YYYY-MM-DD HH24:MI:SS'), {userId}, to_date('{dateTimePickerDataD.Text}', 'YYYY-MM-DD HH24:MI:SS'))";
+
+                    //  STARSZA WERSJA EWID
+                    // command.CommandText = "INSERT INTO KDOK_WSK(ID_DOK, WL, ID_GR, ID_FILE, PATH, ID_RODZ_DOK, OPIS, USER_ID, DATA_D) " +
+                    //                     $"VALUES({idDokSq}, 'dok.rast.', {idGr}, {idFileSq}, '{path}', {idRodzDok}, '', {userId}, to_date('{dateTimePickerDataD.Text}', 'YYYY-MM-DD HH24:MI:SS'))";
+
                     //command.CommandText = $"INSERT INTO KDOK_WSK(ID_DOK, WL, ID_GR, ID_FILE, PATH, ID_RODZ_DOK, OPIS, USER_ID, DATA_D) VALUES({idDokSq}, 'dzzgl', {idGr}, {idFileSq}, '{path}', {idRodzDok}, '', {userId}, to_date('{dateTimePickerDataD.Text}', 'YYYY-MM-DD HH24:MI:SS'))";
-                    command.CommandText = $"INSERT INTO KDOK_WSK(ID_DOK, WL, ID_GR, ID_FILE, PATH, ID_RODZ_DOK, OPIS, USER_ID, DATA_D) VALUES({idDokSq}, 'dok.rast.', {idGr}, {idFileSq}, '{path}', {idRodzDok}, '', {userId}, to_date('{dateTimePickerDataD.Text}', 'YYYY-MM-DD HH24:MI:SS'))";
                     //command.CommandText = $"INSERT INTO KDOK_WSK(ID_DOK, WL, ID_GR, ID_FILE, PATH, ID_RODZ_DOK, OPIS, USER_ID, DATA_D) VALUES({idDokSq}, 'operat', {idGr}, {idFileSq}, '{path}', {idRodzDok}, '', {userId}, to_date('{dateTimePickerDataD.Text}', 'YYYY-MM-DD HH24:MI:SS'))";
                     //command.CommandText = $"INSERT INTO KDOK_WSK(ID_DOK, WL, ID_GR, ID_FILE, PATH, ID_RODZ_DOK, OPIS, USER_ID, DATA_D) VALUES({idDokSq}, 'mapa', {idGr}, {idFileSq}, '{path}', {idRodzDok}, '', {userId}, to_date('{dateTimePickerDataD.Text}', 'YYYY-MM-DD HH24:MI:SS'))";
                     
@@ -662,7 +687,7 @@ namespace BlobLoader
             catch (Exception exception)
             {
                 transaction.Rollback();     // w przypadku wystąpienia błędu wycofaj transakcje
-                toolStripStatusLabel.Text = exception.Message;
+                toolStripStatusLabel.Text = exception.Message + "\n" + command.CommandText;
             }
             finally
             {
@@ -698,6 +723,38 @@ namespace BlobLoader
             {
                     // Add the selection to the clipboard.
                     Clipboard.SetDataObject(dataGridView.GetClipboardContent() ?? throw new InvalidOperationException());
+            }
+        }
+
+        private void FormMain_Shown(object sender, EventArgs e)
+        {
+            MyLicense license = LicenseHandler.ReadLicenseFile(out LicenseStatus licStatus, out string validationMsg);
+
+            switch (licStatus)
+            {
+                case LicenseStatus.Undefined:
+
+                    MessageBox.Show("Brak pliku z licencją!\nIdentyfikator komputera: " + LicenseHandler.GenerateUid("BlobLoader"), Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                    Application.Exit();
+                    break;
+
+                case LicenseStatus.Valid:
+
+                    toolStripStatusLabel.Text = $"Licencja typu: '{license.Type}', ważna do: {license.LicenseEnd}";
+                    break;
+
+                case LicenseStatus.Invalid:
+                case LicenseStatus.Cracked:
+                case LicenseStatus.Expired:
+
+                    MessageBox.Show(validationMsg, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                    Application.Exit();
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
     }

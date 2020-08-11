@@ -1,11 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.489
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30204.135
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlobLoader", "BlobLoader\BlobLoader.csproj", "{3553BCFC-25F2-4ABD-8358-D9F2FF5FED44}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "License", "..\License Generator\License\License.shproj", "{0E661AE5-DDF3-4F0A-8022-CF43A6E9D9C8}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		..\License Generator\License\License.projitems*{0e661ae5-ddf3-4f0a-8022-cf43a6e9d9c8}*SharedItemsImports = 13
+		..\License Generator\License\License.projitems*{3553bcfc-25f2-4abd-8358-d9f2ff5fed44}*SharedItemsImports = 4
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU

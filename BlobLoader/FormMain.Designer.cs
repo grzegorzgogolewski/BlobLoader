@@ -54,6 +54,7 @@
             this.buttonFilter = new System.Windows.Forms.Button();
             this.verifyBackgroundWorker = new System.ComponentModel.BackgroundWorker();
             this.groupBoxParams = new System.Windows.Forms.GroupBox();
+            this.checkBoxCustomDict = new System.Windows.Forms.CheckBox();
             this.labelDataD = new System.Windows.Forms.Label();
             this.dateTimePickerDataD = new System.Windows.Forms.DateTimePicker();
             this.textBoxUserId = new System.Windows.Forms.TextBox();
@@ -65,7 +66,6 @@
             this.buttonLoadCustom = new System.Windows.Forms.Button();
             this.loadBlobCustomBackgroundWorker = new System.ComponentModel.BackgroundWorker();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.checkBoxCustomDict = new System.Windows.Forms.CheckBox();
             this.statusStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.contextMenuStripDataGrid.SuspendLayout();
@@ -308,6 +308,16 @@
             this.groupBoxParams.TabStop = false;
             this.groupBoxParams.Text = "Ustawienia";
             // 
+            // checkBoxCustomDict
+            // 
+            this.checkBoxCustomDict.AutoSize = true;
+            this.checkBoxCustomDict.Location = new System.Drawing.Point(6, 79);
+            this.checkBoxCustomDict.Name = "checkBoxCustomDict";
+            this.checkBoxCustomDict.Size = new System.Drawing.Size(142, 17);
+            this.checkBoxCustomDict.TabIndex = 20;
+            this.checkBoxCustomDict.Text = "Niestandardowy słownik";
+            this.checkBoxCustomDict.UseVisualStyleBackColor = true;
+            // 
             // labelDataD
             // 
             this.labelDataD.AutoSize = true;
@@ -406,16 +416,6 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Ustawienia custom";
             // 
-            // checkBoxCustomDict
-            // 
-            this.checkBoxCustomDict.AutoSize = true;
-            this.checkBoxCustomDict.Location = new System.Drawing.Point(6, 79);
-            this.checkBoxCustomDict.Name = "checkBoxCustomDict";
-            this.checkBoxCustomDict.Size = new System.Drawing.Size(142, 17);
-            this.checkBoxCustomDict.TabIndex = 20;
-            this.checkBoxCustomDict.Text = "Niestandardowy słownik";
-            this.checkBoxCustomDict.UseVisualStyleBackColor = true;
-            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -437,6 +437,7 @@
             this.Text = "FormMain";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormMain_FormClosing);
             this.Load += new System.EventHandler(this.FormMain_Load);
+            this.Shown += new System.EventHandler(this.FormMain_Shown);
             this.statusStrip.ResumeLayout(false);
             this.statusStrip.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).EndInit();
