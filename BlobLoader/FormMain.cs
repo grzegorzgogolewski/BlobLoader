@@ -5,9 +5,9 @@ using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using Oracle.ManagedDataAccess.Client;
-using IniParser;
-using IniParser.Model;
 using System.Linq;
+using System.Text;
+using BlobLoader.Tools;
 using License;
 
 namespace BlobLoader
@@ -18,7 +18,7 @@ namespace BlobLoader
         private readonly Operaty _dbOperaty = new Operaty();
         private readonly KdokRodzDict _dbKdokRodz = new KdokRodzDict();
 
-        readonly OracleConnection _oracleConnection = new OracleConnection();
+        private readonly OracleConnection _oracleConnection = new OracleConnection();
 
         public FormMain()
         {
@@ -28,6 +28,7 @@ namespace BlobLoader
             buttonVerify.Enabled = false;
             buttonFilter.Enabled = false;
             buttonDisconnect.Enabled = false;
+            buttonLoadCustom.Enabled = false;
 
             dateTimePickerDataD.CustomFormat = "yyyy-MM-dd HH:mm:ss";
         }
@@ -36,17 +37,19 @@ namespace BlobLoader
         private void FormMain_Load(object sender, EventArgs e)
         {
             // ------------------------------------------------------------------------------------
-            // zapamiętaj parametry połączenia w pliku konfiguracyjnym
-            textBoxHost.Text = ReadIni("Database", "Host");
-            textBoxDb.Text = ReadIni("Database", "Database");
-            textBoxUser.Text = SecureText.UnProtect(ReadIni("Database", "User"));
-            textBoxPass.Text = SecureText.UnProtect(ReadIni("Database", "Pass"));
+            // wczytaj parametry programu z pliku konfiguracyjnego
+            
+            textBoxHost.Text = IniFile.ReadIni("Database", "textBoxHost");
+            textBoxDb.Text = IniFile.ReadIni("Database", "textBoxDb");
+            textBoxUser.Text = SecureText.UnProtect(IniFile.ReadIni("Database", "textBoxUser"));
+            textBoxPass.Text = SecureText.UnProtect(IniFile.ReadIni("Database", "textBoxPass"));
 
-            textBoxUserId.Text = ReadIni("Params", "UserId");
-            dateTimePickerDataD.Text = ReadIni("Params", "DataD");
+            textBoxUserId.Text = IniFile.ReadIni("Params", "textBoxUserId");
+            dateTimePickerDataD.Text = IniFile.ReadIni("Params", "dateTimePickerDataD");
 
-            textBoxDokId.Text = ReadIni("Params", "DokId");
-            textBoxIdRodzDok.Text = ReadIni("Params", "IdRodzDok");
+            textBoxDokId.Text = IniFile.ReadIni("Params", "textBoxDokId");
+            textBoxIdRodzDok.Text = IniFile.ReadIni("Params", "textBoxIdRodzDok");
+            comboBoxWl.Text = IniFile.ReadIni("Params", "comboBoxWl");
 
             // wyświetl tytuł aplikacji
             Text = Application.ProductName + " " + Application.ProductVersion;
@@ -63,7 +66,12 @@ namespace BlobLoader
         {
             try
             {
-                _oracleConnection.ConnectionString = $"Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={textBoxHost.Text})(PORT={1521}))(CONNECT_DATA=(SERVICE_NAME={textBoxDb.Text})));User Id={textBoxUser.Text};Password={textBoxPass.Text};";
+                _oracleConnection.ConnectionString = $"Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(" +
+                                                     $"HOST={textBoxHost.Text})(" +
+                                                     $"PORT={1521}))(CONNECT_DATA=(" +
+                                                     $"SERVICE_NAME={textBoxDb.Text})));" +
+                                                     $"User Id={textBoxUser.Text};" +
+                                                     $"Password={textBoxPass.Text};";
                 _oracleConnection.Open();
 
                 // przełączenie aktywności przycisków w zależności od statusu połączenia
@@ -71,15 +79,7 @@ namespace BlobLoader
                 buttonVerify.Enabled = true;
                 buttonConnect.Enabled = false;
                 buttonDisconnect.Enabled = true;
-
-                // zapisanie parametrów połączenia do pliku konfiguracyjnego
-                SaveIni("Database", "Host", textBoxHost.Text);
-                SaveIni("Database", "Database", textBoxDb.Text);
-                SaveIni("Database", "User", SecureText.Protect(textBoxUser.Text));
-                SaveIni("Database", "Pass", SecureText.Protect(textBoxPass.Text)); // hasło dodatkowo jest kodowane
-
-                SaveIni("Params", "DokId", textBoxDokId.Text);
-                SaveIni("Params", "IdRodzDok", textBoxIdRodzDok.Text);
+                buttonLoadCustom.Enabled = true;
 
                 toolStripStatusLabel.Text = "Połączono z bazą: " + textBoxDb.Text;
             }
@@ -99,6 +99,7 @@ namespace BlobLoader
             buttonDisconnect.Enabled = false;
             buttonLoad.Enabled = false;
             buttonVerify.Enabled = false;
+            buttonLoadCustom.Enabled = false;
 
             toolStripStatusLabel.Text = "Rozłączono z bazą";
         }
@@ -108,20 +109,23 @@ namespace BlobLoader
         {
             FolderBrowserDialog fbd = new FolderBrowserDialog
             {
-                SelectedPath = ReadIni("Files", "RecentFolder") // jako domyślny wybierz ostatnio wybrany folder
+                SelectedPath = IniFile.ReadIni("Files", "RecentFolder") // jako domyślny wybierz ostatnio wybrany folder
             };
 
             DialogResult result = fbd.ShowDialog(); // uruchom okno wyboru folderu
 
             if (result == DialogResult.OK)
             {
-                SaveIni("Files", "RecentFolder", fbd.SelectedPath); // jeśli wybrano folder zapisz go do pliku konfiguracyjnego jako ostatnio wybrany
+                IniFile.SaveIni("Files", "RecentFolder", fbd.SelectedPath); // jeśli wybrano folder zapisz go do pliku konfiguracyjnego jako ostatnio wybrany
                 
                 //todo zmienić w zależności od tego co jest ładowane
                 string[] fileNames = Directory.GetFiles(fbd.SelectedPath, "*.*", SearchOption.AllDirectories); // wybierz wszystkie pliki włącznie z podfolderami
 
                 fileNames = fileNames.Where(val => !val.EndsWith(".XML", StringComparison.OrdinalIgnoreCase)).ToArray();    //  pomiń pliki XML
                 fileNames = fileNames.Where(val => !val.EndsWith(".WKT", StringComparison.OrdinalIgnoreCase)).ToArray();    //  pomiń pliki WKT
+                //fileNames = fileNames.Where(val => !val.EndsWith(".BAK", StringComparison.OrdinalIgnoreCase)).ToArray();    //  pomiń pliki BAK
+
+                //fileNames = fileNames.Where(val => val.Contains("ZARYSY_KATASTRALNE")).ToArray();    //  tylko pliki zawierające w nazwie
 
                 Array.Sort(fileNames, new NaturalStringComparer()); // sortowanie nazw plików tak aby cyfry było w kolejności
 
@@ -229,10 +233,6 @@ namespace BlobLoader
                     command.CommandText = "INSERT INTO KDOK_WSK(ID_DOK, WL, ID_GR, ID_FILE, PATH, ID_RODZ_DOK, OPIS, USER_ID, DATA_D, USERM_ID, DATA_M) " +
                                           $"VALUES({idDokSq}, 'operat', {idGr}, {idFileSq}, '{path}', {idRodzDok}, '', {userId}, to_date('{dateTimePickerDataD.Text}', 'YYYY-MM-DD HH24:MI:SS'), {userId}, to_date('{dateTimePickerDataD.Text}', 'YYYY-MM-DD HH24:MI:SS'))";
 
-                    //  STARSZA WERSJA EWID
-                    //command.CommandText = "INSERT INTO KDOK_WSK(ID_DOK, WL, ID_GR, ID_FILE, PATH, ID_RODZ_DOK, OPIS, USER_ID, DATA_D) " +
-                    //                      $"VALUES({idDokSq}, 'operat', {idGr}, {idFileSq}, '{path}', {idRodzDok}, '', {userId}, to_date('{dateTimePickerDataD.Text}', 'YYYY-MM-DD HH24:MI:SS'))";
-
                     command.ExecuteNonQuery();
 
                     // ----------------------------------------------------------------------------
@@ -268,26 +268,8 @@ namespace BlobLoader
         private void LoadBlobBackgroundWorkerOnRunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             buttonLoad.Enabled = true;
-        }
 
-        private static void SaveIni(string section, string key, string value)
-        {
-            if (!File.Exists("configuration.ini")) File.Create("configuration.ini").Dispose();
-
-            FileIniDataParser parser = new FileIniDataParser();
-            IniData iniFile = parser.ReadFile("configuration.ini");
-            iniFile[section][key] = value;
-
-            parser.WriteFile("configuration.ini", iniFile);
-        }
-
-        private static string ReadIni(string section, string key)
-        {
-            if (!File.Exists("configuration.ini")) File.Create("configuration.ini").Dispose();
-
-            FileIniDataParser parser = new FileIniDataParser();
-            IniData iniFile = parser.ReadFile("configuration.ini");
-            return iniFile[section][key];
+            MessageBox.Show("Koniec");
         }
 
         // usunięcie z listy poprawnych wartości i pozostawienie tylko błędnych
@@ -386,85 +368,14 @@ namespace BlobLoader
 
                 if (checkBoxCustomDict.Checked)
                 {
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.shx", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.p89", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.docx", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.ini", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.geo", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.yg5", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.yg4", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.yg3", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.yg2", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.yg1", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.yg0", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.grd", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.ort", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.px", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.bgn", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.prz", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.xg0", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.xg1", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.xg2", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.xg3", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.xg4", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.xg5", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.arj", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.K2", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.DB", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.TC~", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.BG~", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.HTML", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.A02", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.CGP", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.WCA", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.WC~", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.TRC", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.LOG", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.SHS", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.MB", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.TR~", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.OR~", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.TRF", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.ODT", NazdokId = "10", GmlVal = "" });
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.EXE", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.1094_8", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.1094_9", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.1217_16", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.1222_15", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.672_51", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%. OCZYSZCZ", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%._OD", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%._PD", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.116_11", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.297_6", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.1178_15", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.1439_14", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.107_7", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.248_7", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.218_18", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.1111_13", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.url", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.PKT", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.PRN", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.LST", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.KPL", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.KCEXT", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.A01", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.JXL", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.SHP", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.XLSX", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.SBN", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.RTR", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.PRJ", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.DBF", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.SBX", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.LNK", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.TMP", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.URL", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.RTREE", NazdokId = "10", GmlVal = ""});
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 100227, Opis = "plik danych inny", Prefix = "%.FENCE", NazdokId = "10", GmlVal = ""});
+                    List<string> dictionaryList = File.ReadLines("KdokRodzCustom.slo", Encoding.UTF8).ToList();
 
-                    _dbKdokRodz.Add(new KdokRodz {IdRodzDok = 102, Opis = "operat techniczny", Prefix = "op_%.pdf", NazdokId = "10", GmlVal = ""});
+                    for (int i = 1; i < dictionaryList.Count; i++)
+                    {
+                        string[] dictionaryItem = dictionaryList[i].Split(';');
+
+                        _dbKdokRodz.Add(new KdokRodz {IdRodzDok = int.Parse(dictionaryItem[0]), Opis = "plik danych inny", Prefix = dictionaryItem[1], NazdokId = dictionaryItem[2], GmlVal = "inny"});
+                    }
                 }
 
             }
@@ -582,6 +493,8 @@ namespace BlobLoader
 
         private void ButtonLoadCustom_Click(object sender, EventArgs e)
         {
+            buttonLoadCustom.Enabled = false;     // wyłącz przycisk ładowania plików
+
             loadBlobCustomBackgroundWorker.RunWorkerAsync();
         }
 
@@ -661,17 +574,15 @@ namespace BlobLoader
 
                     int userId = Convert.ToInt32(textBoxUserId.Text);
 
-                    command.CommandText = "INSERT INTO KDOK_WSK(ID_DOK, WL, ID_GR, ID_FILE, PATH, ID_RODZ_DOK, OPIS, USER_ID, DATA_D, USERM_ID, DATA_M) " +
-                                          $"VALUES({idDokSq}, 'dok.rast.', {idGr}, {idFileSq}, '{path}', {idRodzDok}, '', {userId}, to_date('{dateTimePickerDataD.Text}', 'YYYY-MM-DD HH24:MI:SS'), {userId}, to_date('{dateTimePickerDataD.Text}', 'YYYY-MM-DD HH24:MI:SS'))";
-
-                    //  STARSZA WERSJA EWID
-                    // command.CommandText = "INSERT INTO KDOK_WSK(ID_DOK, WL, ID_GR, ID_FILE, PATH, ID_RODZ_DOK, OPIS, USER_ID, DATA_D) " +
-                    //                     $"VALUES({idDokSq}, 'dok.rast.', {idGr}, {idFileSq}, '{path}', {idRodzDok}, '', {userId}, to_date('{dateTimePickerDataD.Text}', 'YYYY-MM-DD HH24:MI:SS'))";
-
-                    //command.CommandText = $"INSERT INTO KDOK_WSK(ID_DOK, WL, ID_GR, ID_FILE, PATH, ID_RODZ_DOK, OPIS, USER_ID, DATA_D) VALUES({idDokSq}, 'dzzgl', {idGr}, {idFileSq}, '{path}', {idRodzDok}, '', {userId}, to_date('{dateTimePickerDataD.Text}', 'YYYY-MM-DD HH24:MI:SS'))";
-                    //command.CommandText = $"INSERT INTO KDOK_WSK(ID_DOK, WL, ID_GR, ID_FILE, PATH, ID_RODZ_DOK, OPIS, USER_ID, DATA_D) VALUES({idDokSq}, 'operat', {idGr}, {idFileSq}, '{path}', {idRodzDok}, '', {userId}, to_date('{dateTimePickerDataD.Text}', 'YYYY-MM-DD HH24:MI:SS'))";
-                    //command.CommandText = $"INSERT INTO KDOK_WSK(ID_DOK, WL, ID_GR, ID_FILE, PATH, ID_RODZ_DOK, OPIS, USER_ID, DATA_D) VALUES({idDokSq}, 'mapa', {idGr}, {idFileSq}, '{path}', {idRodzDok}, '', {userId}, to_date('{dateTimePickerDataD.Text}', 'YYYY-MM-DD HH24:MI:SS'))";
+                    string wl = string.Empty;
                     
+                    Invoke(new MethodInvoker(() => wl = comboBoxWl.Text));
+
+                    wl = wl.Substring(0, wl.IndexOf(" -", StringComparison.Ordinal));
+
+                    command.CommandText = "INSERT INTO KDOK_WSK(ID_DOK, WL, ID_GR, ID_FILE, PATH, ID_RODZ_DOK, OPIS, USER_ID, DATA_D, USERM_ID, DATA_M) " +
+                                          $"VALUES({idDokSq}, '{wl}', {idGr}, {idFileSq}, '{path}', {idRodzDok}, '', {userId}, to_date('{dateTimePickerDataD.Text}', 'YYYY-MM-DD HH24:MI:SS'), {userId}, to_date('{dateTimePickerDataD.Text}', 'YYYY-MM-DD HH24:MI:SS'))";
+
                     command.ExecuteNonQuery();
 
                     // ----------------------------------------------------------------------------
@@ -704,17 +615,9 @@ namespace BlobLoader
 
         private void LoadBlobCustomBackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+            buttonLoadCustom.Enabled = true;     // wyłącz przycisk ładowania plików
+
             MessageBox.Show("Koniec");
-        }
-
-        private void TextBoxUserId_TextChanged(object sender, EventArgs e)
-        {
-            SaveIni("Params", "UserId", textBoxUserId.Text);
-        }
-
-        private void DateTimePickerDataD_ValueChanged(object sender, EventArgs e)
-        {
-            SaveIni("Params", "DataD", dateTimePickerDataD.Text);
         }
 
         private void ToolStripMenuItemCopy_Click(object sender, EventArgs e)
@@ -757,5 +660,44 @@ namespace BlobLoader
                     throw new ArgumentOutOfRangeException();
             }
         }
+
+        private void Control_TextChanged(object sender, EventArgs e)
+        {
+            string controlName = ((Control) sender).Name;
+            string controlVal = ((Control) sender).Text;
+
+            switch (controlName)
+            {
+                case "textBoxHost":
+                case "textBoxDb":
+                    IniFile.SaveIni("Database", controlName, controlVal);
+                break;
+
+                case "textBoxUser":
+                case "textBoxPass":
+                    IniFile.SaveIni("Database", controlName, SecureText.Protect(controlVal));
+                    break;
+
+                default:
+                    IniFile.SaveIni("Params", controlName, controlVal);
+                    break;
+            }
+        }
+
+        private void CheckBoxCustomDict_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void statusStrip_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+
+        }
+
+        private void FormMain_Resize(object sender, EventArgs e)
+        {
+            toolStripStatusLabel.Size = new Size(((Form) sender).Size.Width - 50, 23);
+        }
     }
 }
+

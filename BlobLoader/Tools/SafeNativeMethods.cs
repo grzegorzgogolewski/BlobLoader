@@ -3,7 +3,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Security;
 
-namespace BlobLoader
+namespace BlobLoader.Tools
 {
     [SuppressUnmanagedCodeSecurity]
     internal static class SafeNativeMethods

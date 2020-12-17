@@ -68,15 +68,16 @@
     <Compile Include="FormMain.Designer.cs">
       <DependentUpon>FormMain.cs</DependentUpon>
     </Compile>
-    <Compile Include="Functions.cs" />
+    <Compile Include="Tools\Functions.cs" />
     <Compile Include="KdokRodz.cs" />
     <Compile Include="KdokRodzDict.cs" />
     <Compile Include="Operat.cs" />
     <Compile Include="Operaty.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SafeNativeMethods.cs" />
-    <Compile Include="SecureText.cs" />
+    <Compile Include="Tools\IniFile.cs" />
+    <Compile Include="Tools\SafeNativeMethods.cs" />
+    <Compile Include="Tools\SecureText.cs" />
     <EmbeddedResource Include="FormMain.resx">
       <DependentUpon>FormMain.cs</DependentUpon>
     </EmbeddedResource>
@@ -108,6 +109,9 @@
     <Folder Include="Properties\DataSources\" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="KdokRodzCustom.slo">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <Content Include="ScanHelper.ico" />
   </ItemGroup>
   <Import Project="..\..\License Generator\License\License.projitems" Label="Shared" />

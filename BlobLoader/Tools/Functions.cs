@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualBasic;
 using Microsoft.VisualBasic.CompilerServices;
 
-namespace BlobLoader
+namespace BlobLoader.Tools
 {
     public static class Functions
     {

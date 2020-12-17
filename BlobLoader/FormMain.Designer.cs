@@ -54,11 +54,11 @@
             this.buttonFilter = new System.Windows.Forms.Button();
             this.verifyBackgroundWorker = new System.ComponentModel.BackgroundWorker();
             this.groupBoxParams = new System.Windows.Forms.GroupBox();
-            this.checkBoxCustomDict = new System.Windows.Forms.CheckBox();
             this.labelDataD = new System.Windows.Forms.Label();
             this.dateTimePickerDataD = new System.Windows.Forms.DateTimePicker();
             this.textBoxUserId = new System.Windows.Forms.TextBox();
             this.labelUserId = new System.Windows.Forms.Label();
+            this.checkBoxCustomDict = new System.Windows.Forms.CheckBox();
             this.textBoxIdRodzDok = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.textBoxDokId = new System.Windows.Forms.TextBox();
@@ -66,46 +66,50 @@
             this.buttonLoadCustom = new System.Windows.Forms.Button();
             this.loadBlobCustomBackgroundWorker = new System.ComponentModel.BackgroundWorker();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.labelWl = new System.Windows.Forms.Label();
+            this.comboBoxWl = new System.Windows.Forms.ComboBox();
+            this.groupBoxKontrola = new System.Windows.Forms.GroupBox();
             this.statusStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.contextMenuStripDataGrid.SuspendLayout();
             this.groupBoxConnection.SuspendLayout();
             this.groupBoxParams.SuspendLayout();
             this.groupBox1.SuspendLayout();
+            this.groupBoxKontrola.SuspendLayout();
             this.SuspendLayout();
             // 
             // textBoxHost
             // 
-            this.textBoxHost.Location = new System.Drawing.Point(77, 19);
+            this.textBoxHost.Location = new System.Drawing.Point(83, 19);
             this.textBoxHost.Name = "textBoxHost";
             this.textBoxHost.Size = new System.Drawing.Size(115, 20);
             this.textBoxHost.TabIndex = 0;
-            this.textBoxHost.Text = "127.0.0.1";
+            this.textBoxHost.TextChanged += new System.EventHandler(this.Control_TextChanged);
             // 
             // textBoxDb
             // 
-            this.textBoxDb.Location = new System.Drawing.Point(77, 45);
+            this.textBoxDb.Location = new System.Drawing.Point(83, 45);
             this.textBoxDb.Name = "textBoxDb";
             this.textBoxDb.Size = new System.Drawing.Size(115, 20);
             this.textBoxDb.TabIndex = 1;
-            this.textBoxDb.Text = "ORCL";
+            this.textBoxDb.TextChanged += new System.EventHandler(this.Control_TextChanged);
             // 
             // textBoxUser
             // 
-            this.textBoxUser.Location = new System.Drawing.Point(77, 71);
+            this.textBoxUser.Location = new System.Drawing.Point(83, 71);
             this.textBoxUser.Name = "textBoxUser";
             this.textBoxUser.Size = new System.Drawing.Size(115, 20);
             this.textBoxUser.TabIndex = 2;
-            this.textBoxUser.Text = "ewid4";
+            this.textBoxUser.TextChanged += new System.EventHandler(this.Control_TextChanged);
             // 
             // textBoxPass
             // 
-            this.textBoxPass.Location = new System.Drawing.Point(77, 97);
+            this.textBoxPass.Location = new System.Drawing.Point(83, 97);
             this.textBoxPass.Name = "textBoxPass";
             this.textBoxPass.PasswordChar = '*';
             this.textBoxPass.Size = new System.Drawing.Size(115, 20);
             this.textBoxPass.TabIndex = 3;
-            this.textBoxPass.Text = "ewid4";
+            this.textBoxPass.TextChanged += new System.EventHandler(this.Control_TextChanged);
             // 
             // buttonConnect
             // 
@@ -119,7 +123,7 @@
             // 
             // buttonLoad
             // 
-            this.buttonLoad.Location = new System.Drawing.Point(12, 346);
+            this.buttonLoad.Location = new System.Drawing.Point(12, 373);
             this.buttonLoad.Name = "buttonLoad";
             this.buttonLoad.Size = new System.Drawing.Size(204, 25);
             this.buttonLoad.TabIndex = 5;
@@ -131,21 +135,25 @@
             // 
             this.statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel});
-            this.statusStrip.Location = new System.Drawing.Point(0, 512);
+            this.statusStrip.Location = new System.Drawing.Point(0, 572);
             this.statusStrip.Name = "statusStrip";
-            this.statusStrip.Size = new System.Drawing.Size(1492, 22);
+            this.statusStrip.Size = new System.Drawing.Size(1292, 22);
             this.statusStrip.TabIndex = 6;
             this.statusStrip.Text = "statusStrip1";
+            this.statusStrip.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.statusStrip_ItemClicked);
             // 
             // toolStripStatusLabel
             // 
+            this.toolStripStatusLabel.AutoSize = false;
+            this.toolStripStatusLabel.BackColor = System.Drawing.SystemColors.Control;
             this.toolStripStatusLabel.Name = "toolStripStatusLabel";
-            this.toolStripStatusLabel.Size = new System.Drawing.Size(48, 17);
+            this.toolStripStatusLabel.Size = new System.Drawing.Size(1250, 17);
             this.toolStripStatusLabel.Text = "Gotowy";
+            this.toolStripStatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // buttonDisconnect
             // 
-            this.buttonDisconnect.Location = new System.Drawing.Point(102, 123);
+            this.buttonDisconnect.Location = new System.Drawing.Point(108, 123);
             this.buttonDisconnect.Name = "buttonDisconnect";
             this.buttonDisconnect.Size = new System.Drawing.Size(90, 25);
             this.buttonDisconnect.TabIndex = 7;
@@ -176,7 +184,7 @@
             this.dataGridView.Location = new System.Drawing.Point(230, 17);
             this.dataGridView.Name = "dataGridView";
             this.dataGridView.ReadOnly = true;
-            this.dataGridView.Size = new System.Drawing.Size(1250, 466);
+            this.dataGridView.Size = new System.Drawing.Size(1050, 526);
             this.dataGridView.TabIndex = 10;
             // 
             // contextMenuStripDataGrid
@@ -195,9 +203,9 @@
             // 
             // buttonVerify
             // 
-            this.buttonVerify.Location = new System.Drawing.Point(12, 207);
+            this.buttonVerify.Location = new System.Drawing.Point(6, 45);
             this.buttonVerify.Name = "buttonVerify";
-            this.buttonVerify.Size = new System.Drawing.Size(90, 25);
+            this.buttonVerify.Size = new System.Drawing.Size(80, 25);
             this.buttonVerify.TabIndex = 11;
             this.buttonVerify.Text = "Weryfikuj";
             this.buttonVerify.UseVisualStyleBackColor = true;
@@ -206,9 +214,9 @@
             // progressBar
             // 
             this.progressBar.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.progressBar.Location = new System.Drawing.Point(0, 489);
+            this.progressBar.Location = new System.Drawing.Point(0, 549);
             this.progressBar.Name = "progressBar";
-            this.progressBar.Size = new System.Drawing.Size(1492, 23);
+            this.progressBar.Size = new System.Drawing.Size(1292, 23);
             this.progressBar.Step = 1;
             this.progressBar.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
             this.progressBar.TabIndex = 12;
@@ -278,9 +286,9 @@
             // 
             // buttonFilter
             // 
-            this.buttonFilter.Location = new System.Drawing.Point(126, 207);
+            this.buttonFilter.Location = new System.Drawing.Point(118, 45);
             this.buttonFilter.Name = "buttonFilter";
-            this.buttonFilter.Size = new System.Drawing.Size(90, 25);
+            this.buttonFilter.Size = new System.Drawing.Size(80, 25);
             this.buttonFilter.TabIndex = 14;
             this.buttonFilter.Text = "Filtruj";
             this.buttonFilter.UseVisualStyleBackColor = true;
@@ -296,32 +304,21 @@
             // 
             // groupBoxParams
             // 
-            this.groupBoxParams.Controls.Add(this.checkBoxCustomDict);
             this.groupBoxParams.Controls.Add(this.labelDataD);
             this.groupBoxParams.Controls.Add(this.dateTimePickerDataD);
             this.groupBoxParams.Controls.Add(this.textBoxUserId);
             this.groupBoxParams.Controls.Add(this.labelUserId);
-            this.groupBoxParams.Location = new System.Drawing.Point(12, 238);
+            this.groupBoxParams.Location = new System.Drawing.Point(12, 293);
             this.groupBoxParams.Name = "groupBoxParams";
-            this.groupBoxParams.Size = new System.Drawing.Size(204, 102);
+            this.groupBoxParams.Size = new System.Drawing.Size(204, 74);
             this.groupBoxParams.TabIndex = 15;
             this.groupBoxParams.TabStop = false;
             this.groupBoxParams.Text = "Ustawienia";
             // 
-            // checkBoxCustomDict
-            // 
-            this.checkBoxCustomDict.AutoSize = true;
-            this.checkBoxCustomDict.Location = new System.Drawing.Point(6, 79);
-            this.checkBoxCustomDict.Name = "checkBoxCustomDict";
-            this.checkBoxCustomDict.Size = new System.Drawing.Size(142, 17);
-            this.checkBoxCustomDict.TabIndex = 20;
-            this.checkBoxCustomDict.Text = "Niestandardowy słownik";
-            this.checkBoxCustomDict.UseVisualStyleBackColor = true;
-            // 
             // labelDataD
             // 
             this.labelDataD.AutoSize = true;
-            this.labelDataD.Location = new System.Drawing.Point(3, 51);
+            this.labelDataD.Location = new System.Drawing.Point(6, 51);
             this.labelDataD.Name = "labelDataD";
             this.labelDataD.Size = new System.Drawing.Size(43, 13);
             this.labelDataD.TabIndex = 19;
@@ -330,40 +327,51 @@
             // dateTimePickerDataD
             // 
             this.dateTimePickerDataD.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
-            this.dateTimePickerDataD.Location = new System.Drawing.Point(56, 45);
+            this.dateTimePickerDataD.Location = new System.Drawing.Point(62, 45);
             this.dateTimePickerDataD.Name = "dateTimePickerDataD";
             this.dateTimePickerDataD.Size = new System.Drawing.Size(136, 20);
             this.dateTimePickerDataD.TabIndex = 18;
-            this.dateTimePickerDataD.ValueChanged += new System.EventHandler(this.DateTimePickerDataD_ValueChanged);
+            this.dateTimePickerDataD.ValueChanged += new System.EventHandler(this.Control_TextChanged);
             // 
             // textBoxUserId
             // 
-            this.textBoxUserId.Location = new System.Drawing.Point(56, 19);
+            this.textBoxUserId.Location = new System.Drawing.Point(62, 19);
             this.textBoxUserId.Name = "textBoxUserId";
             this.textBoxUserId.Size = new System.Drawing.Size(136, 20);
             this.textBoxUserId.TabIndex = 17;
-            this.textBoxUserId.TextChanged += new System.EventHandler(this.TextBoxUserId_TextChanged);
+            this.textBoxUserId.TextChanged += new System.EventHandler(this.Control_TextChanged);
             // 
             // labelUserId
             // 
             this.labelUserId.AutoSize = true;
-            this.labelUserId.Location = new System.Drawing.Point(3, 22);
+            this.labelUserId.Location = new System.Drawing.Point(6, 22);
             this.labelUserId.Name = "labelUserId";
             this.labelUserId.Size = new System.Drawing.Size(44, 13);
             this.labelUserId.TabIndex = 17;
             this.labelUserId.Text = "user_id:";
             // 
+            // checkBoxCustomDict
+            // 
+            this.checkBoxCustomDict.Location = new System.Drawing.Point(6, 19);
+            this.checkBoxCustomDict.Name = "checkBoxCustomDict";
+            this.checkBoxCustomDict.Size = new System.Drawing.Size(146, 20);
+            this.checkBoxCustomDict.TabIndex = 20;
+            this.checkBoxCustomDict.Text = "Niestandardowy słownik";
+            this.checkBoxCustomDict.UseVisualStyleBackColor = true;
+            this.checkBoxCustomDict.CheckedChanged += new System.EventHandler(this.CheckBoxCustomDict_CheckedChanged);
+            // 
             // textBoxIdRodzDok
             // 
-            this.textBoxIdRodzDok.Location = new System.Drawing.Point(77, 45);
+            this.textBoxIdRodzDok.Location = new System.Drawing.Point(83, 45);
             this.textBoxIdRodzDok.Name = "textBoxIdRodzDok";
             this.textBoxIdRodzDok.Size = new System.Drawing.Size(115, 20);
             this.textBoxIdRodzDok.TabIndex = 22;
+            this.textBoxIdRodzDok.TextChanged += new System.EventHandler(this.Control_TextChanged);
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(3, 48);
+            this.label2.Location = new System.Drawing.Point(9, 48);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(68, 13);
             this.label2.TabIndex = 23;
@@ -371,15 +379,16 @@
             // 
             // textBoxDokId
             // 
-            this.textBoxDokId.Location = new System.Drawing.Point(56, 19);
+            this.textBoxDokId.Location = new System.Drawing.Point(83, 19);
             this.textBoxDokId.Name = "textBoxDokId";
-            this.textBoxDokId.Size = new System.Drawing.Size(136, 20);
+            this.textBoxDokId.Size = new System.Drawing.Size(115, 20);
             this.textBoxDokId.TabIndex = 20;
+            this.textBoxDokId.TextChanged += new System.EventHandler(this.Control_TextChanged);
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(3, 22);
+            this.label1.Location = new System.Drawing.Point(35, 22);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(42, 13);
             this.label1.TabIndex = 21;
@@ -387,7 +396,7 @@
             // 
             // buttonLoadCustom
             // 
-            this.buttonLoadCustom.Location = new System.Drawing.Point(12, 458);
+            this.buttonLoadCustom.Location = new System.Drawing.Point(12, 512);
             this.buttonLoadCustom.Name = "buttonLoadCustom";
             this.buttonLoadCustom.Size = new System.Drawing.Size(204, 25);
             this.buttonLoadCustom.TabIndex = 16;
@@ -405,39 +414,78 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.labelWl);
+            this.groupBox1.Controls.Add(this.comboBoxWl);
             this.groupBox1.Controls.Add(this.textBoxDokId);
             this.groupBox1.Controls.Add(this.label2);
             this.groupBox1.Controls.Add(this.textBoxIdRodzDok);
             this.groupBox1.Controls.Add(this.label1);
-            this.groupBox1.Location = new System.Drawing.Point(12, 377);
+            this.groupBox1.Location = new System.Drawing.Point(12, 404);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(204, 75);
+            this.groupBox1.Size = new System.Drawing.Size(204, 102);
             this.groupBox1.TabIndex = 20;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Ustawienia custom";
+            // 
+            // labelWl
+            // 
+            this.labelWl.AutoSize = true;
+            this.labelWl.Location = new System.Drawing.Point(57, 75);
+            this.labelWl.Name = "labelWl";
+            this.labelWl.Size = new System.Drawing.Size(20, 13);
+            this.labelWl.TabIndex = 25;
+            this.labelWl.Text = "wl:";
+            // 
+            // comboBoxWl
+            // 
+            this.comboBoxWl.FormattingEnabled = true;
+            this.comboBoxWl.Items.AddRange(new object[] {
+            "dok.rast. - inny materiał",
+            "dzzgl - dokument przychodzący",
+            "mapa - mapa",
+            "operat - operat geodezyjny",
+            "zglzm - zgłoszenie zmiany"});
+            this.comboBoxWl.Location = new System.Drawing.Point(83, 72);
+            this.comboBoxWl.Name = "comboBoxWl";
+            this.comboBoxWl.Size = new System.Drawing.Size(115, 21);
+            this.comboBoxWl.TabIndex = 24;
+            this.comboBoxWl.SelectedIndexChanged += new System.EventHandler(this.Control_TextChanged);
+            // 
+            // groupBoxKontrola
+            // 
+            this.groupBoxKontrola.Controls.Add(this.checkBoxCustomDict);
+            this.groupBoxKontrola.Controls.Add(this.buttonVerify);
+            this.groupBoxKontrola.Controls.Add(this.buttonFilter);
+            this.groupBoxKontrola.Location = new System.Drawing.Point(12, 207);
+            this.groupBoxKontrola.Name = "groupBoxKontrola";
+            this.groupBoxKontrola.Size = new System.Drawing.Size(204, 80);
+            this.groupBoxKontrola.TabIndex = 21;
+            this.groupBoxKontrola.TabStop = false;
+            this.groupBoxKontrola.Text = "Weryfikacja";
             // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1492, 534);
+            this.ClientSize = new System.Drawing.Size(1292, 594);
+            this.Controls.Add(this.groupBoxKontrola);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.buttonLoadCustom);
+            this.Controls.Add(this.buttonLoad);
             this.Controls.Add(this.groupBoxParams);
-            this.Controls.Add(this.buttonFilter);
             this.Controls.Add(this.groupBoxConnection);
             this.Controls.Add(this.progressBar);
-            this.Controls.Add(this.buttonVerify);
             this.Controls.Add(this.dataGridView);
             this.Controls.Add(this.buttonSelectDirectoryBlobs);
             this.Controls.Add(this.statusStrip);
-            this.Controls.Add(this.buttonLoad);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MinimumSize = new System.Drawing.Size(1300, 625);
             this.Name = "FormMain";
             this.Text = "FormMain";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormMain_FormClosing);
             this.Load += new System.EventHandler(this.FormMain_Load);
             this.Shown += new System.EventHandler(this.FormMain_Shown);
+            this.Resize += new System.EventHandler(this.FormMain_Resize);
             this.statusStrip.ResumeLayout(false);
             this.statusStrip.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).EndInit();
@@ -448,6 +496,7 @@
             this.groupBoxParams.PerformLayout();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            this.groupBoxKontrola.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -491,6 +540,9 @@
         private System.Windows.Forms.ContextMenuStrip contextMenuStripDataGrid;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemCopy;
         private System.Windows.Forms.CheckBox checkBoxCustomDict;
+        private System.Windows.Forms.GroupBox groupBoxKontrola;
+        private System.Windows.Forms.ComboBox comboBoxWl;
+        private System.Windows.Forms.Label labelWl;
     }
 }
 
